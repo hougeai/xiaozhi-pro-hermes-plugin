@@ -1,0 +1,14 @@
+name: xiaozhi_pro
+label: 小智Pro
+kind: platform
+version: 1.0.0
+description: >
+  XiaoZhi Pro platform adapter for Hermes Agent.
+  Connects to the XiaoZhi Pro WebSocket endpoint
+  and relays messages between XiaoZhi hardware devices and the Hermes agent.
+author: HougeAI
+requires_env:
+  - name: XIAOZHI_PRO_TOKEN
+    description: "token for XiaoZhi Pro server authentication"
+    prompt: "token"
+    password: true
