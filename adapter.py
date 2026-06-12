@@ -19,13 +19,19 @@ Or via environment variable:
 from __future__ import annotations
 
 import asyncio
-import aiohttp
 import json
 import logging
 import os
 import time
 from datetime import datetime
 from typing import Any, Dict, Optional
+
+try:
+    import aiohttp
+    AIOHTTP_AVAILABLE = True
+except ImportError:
+    AIOHTTP_AVAILABLE = False
+    aiohttp = None  # type: ignore[assignment]
 
 from gateway.platforms.base import (
     BasePlatformAdapter,
@@ -64,6 +70,9 @@ class XiaoZhiAdapter(BasePlatformAdapter):
         self._last_device_id: Dict[str, str] = {}  # user_id → device_id
 
     async def connect(self) -> bool:
+        if not AIOHTTP_AVAILABLE:
+            logger.warning("[XiaoZhiPro] aiohttp not installed. Run: pip install aiohttp")
+            return False
         logger.info(f"[XiaoZhiPro] Connecting to {_WS_URL} ...")
         self._running = True
         self._session = aiohttp.ClientSession()
@@ -272,7 +281,12 @@ class XiaoZhiAdapter(BasePlatformAdapter):
 
 
 def _check_requirements() -> bool:
-    return bool(os.getenv("XIAOZHI_PRO_TOKEN", ""))
+    """只检查依赖库是否可用；token 验证留给 connect() 阶段。
+
+    旧版只看环境变量，导致 config.yaml 中配置了 token 也不生效。
+    现在不再强制要求环境变量，config.yaml 的 extra.token 同样有效。
+    """
+    return AIOHTTP_AVAILABLE
 
 
 def _env_enablement() -> dict | None:
@@ -296,7 +310,7 @@ def register(ctx):
         check_fn=_check_requirements,
         is_connected=lambda cfg: bool(cfg.extra.get("token") or os.getenv("XIAOZHI_PRO_TOKEN")),
         env_enablement_fn=_env_enablement,
-        required_env=["XIAOZHI_PRO_TOKEN"],
+        required_env=[],
         install_hint="Requires aiohttp: pip install aiohttp",
         pii_safe=False,
         allow_update_command=True,
