@@ -308,13 +308,7 @@ def register(ctx):
         label="小智Pro",
         adapter_factory=lambda cfg: XiaoZhiAdapter(cfg),
         check_fn=_check_requirements,
-        is_connected=lambda cfg: bool(
-            # 用户显式写了 enabled: false 时，shared-key bridge 会在 extra
-            # 中设置 _enabled_explicit=True。此时应返回 False，防止
-            # _apply_env_overrides 把 enabled 强制覆盖为 True。
-            cfg.extra.get("_enabled_explicit") is not True
-            and (cfg.extra.get("token") or os.getenv("XIAOZHI_PRO_TOKEN"))
-        ),
+        is_connected=lambda cfg: bool(cfg.extra.get("token") or os.getenv("XIAOZHI_PRO_TOKEN")),
         env_enablement_fn=_env_enablement,
         required_env=[],
         install_hint="Requires aiohttp: pip install aiohttp",
