@@ -54,21 +54,20 @@ unzip xiaozhi-pro-hermes-plugin-*.zip -d ~/.hermes/hermes-agent/plugins/platform
 在 `~/.hermes/config.yaml` 中添加：
 
 ```yaml
-plugins:
-  enabled:
-    - platforms/xiaozhi_pro
 platforms:
   xiaozhi_pro:
-    enabled: true
     extra:
       token: "你的API密钥"
 ```
 
-> `plugins.enabled` 启用插件，`platforms` 配置连接凭证，两者缺一不可。
+> 本插件属于 bundled platform 插件，Hermes 会自动加载，**无需**在 `plugins.enabled` 中声明。
+> 只要配置了 `token`（或设置了 `XIAOZHI_PRO_TOKEN` 环境变量），网关启动时就会自动连接。
 
 | 环境变量 | 默认值 | 说明 |
 |---------|--------|------|
 | `XIAOZHI_PRO_TOKEN` | — | 小智Pro服务端认证的 API 密钥 |
+
+token 可以通过 config.yaml 的 `extra.token` 或环境变量 `XIAOZHI_PRO_TOKEN` 提供，任一有值即可。
 
 ### 第四步：重启网关
 
@@ -80,13 +79,34 @@ hermes gateway restart
 
 ### 第五步：首次连接需要配对
 
-服务端首次通过 xiaozhi_pro 通道连接 Hermes 会生成一个配对码，需在在终端执行配对命令。配对成功后适配器即可接收来自已配对设备的消息。例如：
+服务端首次通过 xiaozhi_pro 通道连接 Hermes 会生成一个配对码，需在终端执行配对命令。配对成功后适配器即可接收来自已配对设备的消息。例如：
 
 ```bash
 Hi~ I don't recognize you yet!
 Here's your pairing code: B8XWG5HE
 Ask the bot owner to run: hermes pairing approve xiaozhi_pro B8XWG5HE
 ```
+
+## 禁用插件
+
+本插件属于 bundled platform 插件，Hermes 启动时会自动加载并连接。**`plugins.enabled` 和 `enabled: false` 均无法禁用它**（这是 Hermes gateway 的设计：bundled platform 有凭证就自动启用）。
+
+要禁用连接，必须**移除 token**：
+
+```yaml
+platforms:
+  xiaozhi_pro:
+    extra:
+      # token: "你的API密钥"   ← 注释掉或删除即可禁用
+```
+
+同时确保环境变量 `XIAOZHI_PRO_TOKEN` 也未设置：
+
+```bash
+unset XIAOZHI_PRO_TOKEN
+```
+
+移除 token 后重启网关，插件将不会连接。
 
 ## 会话路由
 
